@@ -1,0 +1,101 @@
+﻿/* code_outline.txt */
+
+RFIDtrans (library)
+
+
+TempSensor (library)
+
+
+MoistSensor  (library)
+
+
+Bluetooth Module  (library)
+
+
+MobileApp  (library)
+
+
+Speaker  (library)
+
+
+Class UserParams
+        Float lowTemp
+        Float highTemp
+        Bool moistEnable
+        Time curfewStart
+        Time curfewEnd
+
+
+        Bool compare()
+
+
+struct DataLogEntry
+Int id
+Time timeOut
+Time timeIn
+Bool iRFIDread = false
+Bool valid = false
+
+
+=================================================
+________________
+1. Wait for RFIDtrans read and check Mobile App parameters
+
+
+On tag read:
+-> if inside, go to 2
+->if outside, go to 3
+
+
+2. Check system parameter values (Input: time, moisture, temp)
+
+
+-> fail -> got to 1
+-> good -> go to 3
+
+
+3. Unlock door (output: solenoid, speaker, LED)
+
+
+4. Time, ID
+
+
+5. Start 15s timer
+
+
+-> timer ends
+
+
+6. Relock door (output: solenoid, LED) -> go to 1
+
+=================================================
+________________
+while(!oTagRead || !iTagRead)
+        oTagRead = oRFID.read()
+        iTagRead = iRFID.read()
+        
+If oRFID.read = success
+        door.unlock()
+
+
+        // TODO: datalog
+        // Modify dataLog[id] DataLogEntry(id, time)
+
+
+        delay(15000ms)
+        door.lock()
+
+
+If iRFID.read = success
+        allowAccess = UserParams.compare(moistVal, tempVal, time)
+                
+        If allowAccess
+        create DataLogEntry(id, time, iRFIDread=true)
+        dataLog[id](DatatLogEntry)
+door.unlock()
+        delay(15000ms)
+        door.lock()
+        
+Else
+        Output indicators
+        speaker.deny()
