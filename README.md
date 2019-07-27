@@ -1,7 +1,8 @@
 RFIDoggy-Door
 
-./src/ : source code files
-./lib/ : library dependencies to install in Arduino IDE
-./doc/ : reference documents
+*** source code indentation is 2 spaces per tab ***
 
-source code indentation is 2 spaces per tab
+
+/lib/ contains library dependencies
+
+to add libraries to Arduino IDE, navigate to: Sketch > Include Library > Add .ZIP Library...

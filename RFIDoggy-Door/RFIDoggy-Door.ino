@@ -1,5 +1,5 @@
 /*  
-    main.ino
+    RFIDoggy-Door.ino
 
     run RFIDoggy Door control   
 */
