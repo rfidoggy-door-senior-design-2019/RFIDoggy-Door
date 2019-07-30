@@ -4,6 +4,8 @@
     run RFIDoggy Door control   
 */
 
+#include "UserParameters.h"
+
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -47,6 +49,9 @@ void setup()
   pinMode(PWM_SPEAKER_PIN, OUTPUT);
 
   Serial.begin(9600);
+
+  // initialize User Parameters object
+  UserParameters UsrPrm;
 
   // initialize SPI bus and MFRC522
   SPI.begin();
