@@ -21,6 +21,9 @@
 // Speaker
 #define PWM_SPEAKER_PIN       3
 
+//Test LED
+#define EXTLED                7
+
 // MFRC522 RFID Reader
 #define PWM_SDA_PIN1          10
 #define PWM_SDA_PIN2          8
@@ -37,6 +40,8 @@
 /*****************************************************************************/
 #define NR_OF_READERS         2
 
+
+
 byte SDAPins[] = {PWM_SDA_PIN1, PWM_SDA_PIN2};
 
 MFRC522 mfrc522[NR_OF_READERS]; // Create MFRC522 instance.
@@ -47,6 +52,7 @@ void setup()
   // outputs
   //pinMode(DO_SOLENOID_PIN, OUTPUT);
   //pinMode(PWM_SPEAKER_PIN, OUTPUT);
+  pinMode(EXTLED, OUTPUT);
 
   Serial.begin(9600);
 
@@ -87,12 +93,14 @@ void loop()
         Serial.println(tag);
         if(tag == "8be5c8c")
         {
-          //Serial.println("SUCCESS");
-          
+          Serial.println("SUCCESS");
+          digitalWrite(EXTLED, HIGH);
+          delay(2000);
+          digitalWrite(EXTLED, LOW);
         }
         else
         {
-          //Serial.println("FAIL");
+          Serial.println("FAIL");
         }
       }
       //delay(50);
