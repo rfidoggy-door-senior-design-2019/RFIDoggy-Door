@@ -5,6 +5,7 @@
 */
 
 #include "include/UserParameters.h"
+#include <SoftwareSerial.h>
 
 #include <SPI.h>
 #include <MFRC522.h>
@@ -45,23 +46,29 @@
 byte SDAPins[] = {PWM_SDA_PIN1, PWM_SDA_PIN2};
 
 MFRC522 mfrc522[NR_OF_READERS]; // Create MFRC522 instance.
+SoftwareSerial btm(2,3); 
+int index = 0; 
+//used to store incoming data
+char incomingData[10];
+char incomingCharacter; 
+boolean flag = false; 
 
 // the setup function runs once when you press reset or power the board
 void setup()
 {
-  // outputs
+  //outputs
   //pinMode(DO_SOLENOID_PIN, OUTPUT);
   //pinMode(PWM_SPEAKER_PIN, OUTPUT);
   pinMode(EXTLED, OUTPUT);
 
   Serial.begin(9600);
+  btm.begin(9600); 
 
   // initialize User Parameters object
   //UserParameters UsrPrm;
 
   // initialize SPI bus and MFRC522
   SPI.begin();
-
 
   for(uint8_t reader = 0; reader<NR_OF_READERS; reader++)
   {
@@ -71,8 +78,6 @@ void setup()
     Serial.print(F(": "));
     mfrc522[reader].PCD_DumpVersionToSerial();
   }
-
-  
 }
 
 // the loop function runs infinitely while the board is powered
@@ -93,22 +98,52 @@ void loop()
         Serial.println(tag);
         if(tag == "8be5c8c")
         {
-          Serial.println("SUCCESS");
-          digitalWrite(EXTLED, HIGH);
-          delay(2000);
-          digitalWrite(EXTLED, LOW);
+          //Serial.println("SUCCESS");
+          //digitalWrite(EXTLED, HIGH);
+          //delay(2000);
+          //digitalWrite(EXTLED, LOW);
         }
         else
         {
-          Serial.println("FAIL");
+          //Serial.println("FAIL");
         }
       }
       //delay(50);
     }
-   
- 
+
+    if(btm.available() > 0) {
+      while(btm.available() > 0) {
+        incomingCharacter = btm.read(); 
+        delay(10); 
+        incomingData[index] = incomingCharacter; 
+        index++;
+      }
+      incomingData[index] = '\0';
+      flag = true;
+    }
+    if(flag) {
+      processCommand();
+      flag = false;
+      index = 0; 
+      incomingData[0] = '\0';
+    }
 }
 
+//Decide what to do with the recieved message
+void processCommand() {
+  char receivedCommand = incomingData[0];
+  char inst = incomingData[1];
+
+  switch(receivedCommand) {
+    case 'O':
+      if(inst == 'N') {
+        digitalWrite(EXTLED, HIGH);
+      }
+      else if(inst == 'F') {
+        digitalWrite(EXTLED, LOW);
+      }
+  }
+}
 
 String printTagUID(byte * buffer, byte bufferSize) {
   String tag;
