@@ -46,7 +46,7 @@
 byte SDAPins[] = {PWM_SDA_PIN1, PWM_SDA_PIN2};
 
 MFRC522 mfrc522[NR_OF_READERS]; // Create MFRC522 instance.
-SoftwareSerial btm(2,3); 
+SoftwareSerial btm = SoftwareSerial(SERIAL_RX_PIN, SERIAL_TX_PIN); 
 int index = 0; 
 //used to store incoming data
 char incomingData[10];
@@ -57,8 +57,8 @@ boolean flag = false;
 void setup()
 {
   //outputs
-  //pinMode(DO_SOLENOID_PIN, OUTPUT);
-  //pinMode(PWM_SPEAKER_PIN, OUTPUT);
+  pinMode(SERIAL_RX_PIN, INPUT);
+  pinMode(SERIAL_TX_PIN, OUTPUT);
   pinMode(EXTLED, OUTPUT);
 
   Serial.begin(9600);
@@ -110,10 +110,12 @@ void loop()
       }
       //delay(50);
     }
-
-    if(btm.available() > 0) {
-      while(btm.available() > 0) {
-        incomingCharacter = btm.read(); 
+    Serial.print(btm.available());
+    if(btm.available()) {
+      Serial.print("AVAILABLE");
+      while(btm.available()) {
+        incomingCharacter = btm.read();
+        Serial.print(incomingCharacter); 
         delay(10); 
         incomingData[index] = incomingCharacter; 
         index++;
@@ -137,9 +139,11 @@ void processCommand() {
   switch(receivedCommand) {
     case 'O':
       if(inst == 'N') {
+        Serial.print("LED should be on");
         digitalWrite(EXTLED, HIGH);
       }
       else if(inst == 'F') {
+        Serial.print("LED should be off");
         digitalWrite(EXTLED, LOW);
       }
   }
