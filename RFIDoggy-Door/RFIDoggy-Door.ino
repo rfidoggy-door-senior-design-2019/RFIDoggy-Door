@@ -19,11 +19,12 @@
 // Soil Moisture Sensor
 #define AI_MOIST_SENSOR_PIN   A1
 
-// Speaker
+// Speaker maybe??
 #define PWM_SPEAKER_PIN       3
 
-//Test LED
-#define EXTLED                7
+//Solenoid output pins
+#define INSIDE_SOL             7
+#define OUTSIDE_SOL             6
 
 // MFRC522 RFID Reader
 #define PWM_SDA_PIN1          10
@@ -45,7 +46,7 @@
 
 byte SDAPins[] = {PWM_SDA_PIN1, PWM_SDA_PIN2};
 
-MFRC522 mfrc522[NR_OF_READERS]; // Create MFRC522 instance.
+MFRC522 mfrc522[NR_OF_READERS]; // Create MFRC522 instance. READER 0 will be outside reader
 SoftwareSerial btm = SoftwareSerial(SERIAL_RX_PIN, SERIAL_TX_PIN); 
 int index = 0; 
 //used to store incoming data
@@ -59,13 +60,12 @@ void setup()
   //outputs
   pinMode(SERIAL_RX_PIN, INPUT);
   pinMode(SERIAL_TX_PIN, OUTPUT);
-  pinMode(EXTLED, OUTPUT);
+  pinMode(INSIDE_SOL, OUTPUT);
+  pinMode(OUTSIDE_SOL, OUTPUT);
 
   Serial.begin(9600);
   btm.begin(9600); 
 
-  // initialize User Parameters object
-  //UserParameters UsrPrm;
 
   // initialize SPI bus and MFRC522
   SPI.begin();
@@ -87,35 +87,53 @@ void loop()
    // TODO: implement RFIDoggy Door control
     for (uint8_t reader = 0; reader < NR_OF_READERS; reader++) {
 
-      // Looking for new cards
-      if (mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
-        Serial.print(F("Reader "));
-        Serial.print(reader);
-
-        // Show some details of the PICC (that is: the tag/card)
-        Serial.print(F(": Card UID:"));
-        tag = printTagUID(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
-        Serial.println(tag);
-        if(tag == "8be5c8c")
-        {
-          //Serial.println("SUCCESS");
-          //digitalWrite(EXTLED, HIGH);
-          //delay(2000);
-          //digitalWrite(EXTLED, LOW);
-        }
-        else
-        {
-          //Serial.println("FAIL");
+      if(reader == 1){
+        if (mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
+          Serial.print(F("Reader "));
+          Serial.print(reader);
+  
+          // Show some details of the PICC (that is: the tag/card)
+          Serial.print(F(": Card UID:"));
+          tag = printTagUID(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
+          Serial.println(tag);
+          
+          if(tag == "8be5c8c" && incomingCharacter == 'U'){
+            Serial.println("SUCCESS");
+            digitalWrite(OUTSIDE_SOL, HIGH);
+            delay(2000);
+            digitalWrite(OUTSIDE_SOL, LOW);
+          }
+          else{
+            Serial.println("FAIL");
+          }
         }
       }
-      //delay(50);
+      else{
+        if (mfrc522[reader].PICC_IsNewCardPresent() && mfrc522[reader].PICC_ReadCardSerial()) {
+          Serial.print(F("Reader "));
+          Serial.print(reader);
+  
+          // Show some details of the PICC (that is: the tag/card)
+          Serial.print(F(": Card UID:"));
+          tag = printTagUID(mfrc522[reader].uid.uidByte, mfrc522[reader].uid.size);
+          Serial.println(tag);
+          
+          if(tag == "8be5c8c"){
+            Serial.println("SUCCESS");
+            digitalWrite(INSIDE_SOL, HIGH);
+            delay(2000);
+            digitalWrite(INSIDE_SOL, LOW);
+          }
+          else{
+            Serial.println("FAIL");
+          }
+        }
+      }
     }
-    Serial.print(btm.available());
-    if(btm.available()) {
-      Serial.print("AVAILABLE");
-      while(btm.available()) {
+    
+    if(btm.available() > 0) {
+      while(btm.available() > 0) {
         incomingCharacter = btm.read();
-        Serial.print(incomingCharacter); 
         delay(10); 
         incomingData[index] = incomingCharacter; 
         index++;
@@ -124,29 +142,10 @@ void loop()
       flag = true;
     }
     if(flag) {
-      processCommand();
       flag = false;
       index = 0; 
       incomingData[0] = '\0';
     }
-}
-
-//Decide what to do with the recieved message
-void processCommand() {
-  char receivedCommand = incomingData[0];
-  char inst = incomingData[1];
-
-  switch(receivedCommand) {
-    case 'O':
-      if(inst == 'N') {
-        Serial.print("LED should be on");
-        digitalWrite(EXTLED, HIGH);
-      }
-      else if(inst == 'F') {
-        Serial.print("LED should be off");
-        digitalWrite(EXTLED, LOW);
-      }
-  }
 }
 
 String printTagUID(byte * buffer, byte bufferSize) {
