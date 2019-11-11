@@ -99,6 +99,7 @@ void loop()
           
           if(tag == "8be5c8c" && incomingCharacter == 'U'){
             Serial.println("SUCCESS");
+            "
             digitalWrite(OUTSIDE_SOL, HIGH);
             delay(2000);
             digitalWrite(OUTSIDE_SOL, LOW);
